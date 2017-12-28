@@ -34,6 +34,7 @@ const OPTION_NO_PUBLIC = "no-public";
 const OPTION_CHECK_ACCESSOR = "check-accessor";
 const OPTION_CHECK_CONSTRUCTOR = "check-constructor";
 const OPTION_CHECK_PARAMETER_PROPERTY = "check-parameter-property";
+const LIFECYCLE_METHODS = ['render', 'componentWillMount', 'componentDidMount', 'componentWillUpdate', 'componentDidUpdate', 'shouldComponentUpdate', 'componentWillReceiveProps', 'componentWillUnmount']; 
 
 interface Options {
     noPublic: boolean;
@@ -157,11 +158,13 @@ function walk(ctx: Lint.WalkContext<Options>) {
                 ? getChildOfKind(node, ts.SyntaxKind.ConstructorKeyword, ctx.sourceFile)!
                 : node.name !== undefined ? node.name : node;
             const memberName = node.name !== undefined && node.name.kind === ts.SyntaxKind.Identifier ? node.name.text : undefined;
-            ctx.addFailureAtNode(
-                nameNode,
-                Rule.FAILURE_STRING_FACTORY(typeToString(node), memberName),
-                Lint.Replacement.appendText(getInsertionPosition(node, ctx.sourceFile), "public "),
-            );
+            if (LIFECYCLE_METHODS.indexOf(memberName) === -1) {
+                ctx.addFailureAtNode(
+                    nameNode,
+                    Rule.FAILURE_STRING_FACTORY(typeToString(node), memberName),
+                    Lint.Replacement.appendText(getInsertionPosition(node, ctx.sourceFile), "public "),
+                );
+            }
         }
     }
 }
